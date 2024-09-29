@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "283692545969",
+    "project_id": "health-companion-database",
+    "storage_bucket": "health-companion-database.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:283692545969:android:ca8f9bf597e98c02b32f90",
+        "android_client_info": {
+          "package_name": "com.example.health_companion.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTnREEkGnLw4asPPZeReDfZtMY0FYKHVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
