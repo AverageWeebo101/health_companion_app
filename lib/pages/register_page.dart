@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:async';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);
@@ -23,6 +24,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String _bloodType = 'A+';
   XFile? _profileImage;
   Uint8List? _webImageData;
+  bool _isPasswordVisible = false;
+  Timer? _visibilityTimer;
+  bool _agreedToTOS = false;
+
   bool _isRegistering = false;
 
   Future<void> _pickImage() async {
@@ -71,6 +76,29 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return null;
   }
 
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
+
+    if (_isPasswordVisible) {
+      _visibilityTimer?.cancel();
+      _visibilityTimer = Timer(const Duration(seconds: 3), () {
+        setState(() {
+          _isPasswordVisible = false;
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _visibilityTimer?.cancel();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,8 +143,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
+                obscureText: !_isPasswordVisible,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: _togglePasswordVisibility,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -142,8 +180,37 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 },
               ),
               const SizedBox(height: 16),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _agreedToTOS,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _agreedToTOS = value!;
+                      });
+                    },
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/tos');
+                      },
+                      child: const Text(
+                        'Clicking on the Box means you agree to our Terms and Services',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _isRegistering ? null : () => _registerUser(context),
+                onPressed: (_isRegistering || !_agreedToTOS)
+                    ? null
+                    : () => _registerUser(context),
                 child: _isRegistering
                     ? const CircularProgressIndicator()
                     : const Text('Register'),
@@ -166,6 +233,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   Future<void> _registerUser(BuildContext context) async {
+    if (!_agreedToTOS) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('You must agree to the Terms and Services.'),
+      ));
+      return;
+    }
+
     setState(() {
       _isRegistering = true;
     });

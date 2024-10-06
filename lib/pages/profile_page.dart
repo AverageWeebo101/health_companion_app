@@ -53,7 +53,6 @@ class _ProfilePageState extends State<ProfilePage> {
           _bloodType = data['bloodType'] ?? 'No blood type';
           _profilePictureUrl = data['profileImage'] ?? '';
 
-          // Debug prints
           print('Profile Image URL: $_profilePictureUrl');
 
           if (kIsWeb && data['webProfileImage'] != null) {
@@ -150,7 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
           IconButton(
             icon: const Icon(Icons.home),
             onPressed: () {
-              Navigator.pushReplacementNamed(context, '/home');
+              Navigator.pushReplacementNamed(context, '/');
             },
           )
         ],
@@ -170,8 +169,8 @@ class _ProfilePageState extends State<ProfilePage> {
           CircleAvatar(
             radius: 50,
             backgroundImage: _profilePictureUrl.isNotEmpty
-                ? NetworkImage(_profilePictureUrl +
-                    '?v=${DateTime.now().millisecondsSinceEpoch}')
+                ? NetworkImage(
+                    '$_profilePictureUrl?v=${DateTime.now().millisecondsSinceEpoch}')
                 : const AssetImage('assets/images/default_profile.png')
                     as ImageProvider,
             onBackgroundImageError: (error, stackTrace) {
@@ -184,26 +183,22 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 16),
           Text(
             _name,
-            style: const TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             _email,
-            style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Contact Number: $_contactNumber',
-            style: const TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Blood Type: $_bloodType',
-            style: const TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           ElevatedButton(

@@ -69,6 +69,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
       'profileImage': profileImageUrl ?? '',
     });
 
+    await logUserEdit(
+        'Updated profile: name=${_nameController.text}, email=${_emailController.text}, contactNumber=${_contactNumberController.text}, bloodType=$_bloodType');
+
     setState(() {
       _isSaving = false;
     });
@@ -120,6 +123,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _profileImage = pickedFile;
         });
       }
+    }
+  }
+
+  Future<void> logUserEdit(String detailChanges) async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('activityLog')
+          .add({
+        'timestamp': Timestamp.now(),
+        'activity': 'Edit User Details',
+        'details': detailChanges,
+      });
     }
   }
 

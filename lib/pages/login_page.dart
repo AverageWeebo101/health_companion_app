@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -13,6 +14,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String _errorMessage = '';
+  bool _isPasswordVisible = false;
+  Timer? _visibilityTimer;
 
   void _login() async {
     String email = _emailController.text;
@@ -35,6 +38,29 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
+
+    if (_isPasswordVisible) {
+      _visibilityTimer?.cancel();
+      _visibilityTimer = Timer(const Duration(seconds: 3), () {
+        setState(() {
+          _isPasswordVisible = false;
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _visibilityTimer?.cancel();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/app_logo.png', height: 100), // App logo
+            Image.asset('assets/images/app_logo.png', height: 100),
             const SizedBox(height: 20),
             const Text(
               'Welcome to Health Companion App',
@@ -66,8 +92,18 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
+              obscureText: !_isPasswordVisible,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: _togglePasswordVisibility,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(

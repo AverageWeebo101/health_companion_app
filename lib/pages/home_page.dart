@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'profile_page.dart';
 import 'login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
+import 'package:health_companion_app/providers/theme_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,7 +17,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   User? _user;
-  String _displayName = '';
+  String _displayName = 'Guest';
   String _profilePictureUrl = '';
   Uint8List? _webProfileImage;
 
@@ -29,37 +31,52 @@ class _HomePageState extends State<HomePage> {
     _user = FirebaseAuth.instance.currentUser;
 
     if (_user != null) {
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(_user!.uid)
-          .get()
-          .then((docSnapshot) {
-        if (docSnapshot.exists) {
-        } else {}
-      });
+      print('User is logged in with UID: ${_user!.uid}');
 
-      setState(() {});
+      _loadUserProfile();
+    } else {
+      print('No user is logged in.');
     }
+    setState(() {});
   }
 
   Future<void> _loadUserProfile() async {
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(_user!.uid)
-        .get();
+    if (_user != null) {
+      try {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_user!.uid)
+            .get();
 
-    setState(() {
-      _displayName = userDoc.get('name') ?? _user!.displayName ?? 'User';
-      _profilePictureUrl = userDoc.get('profileImage') ?? '';
-      if (kIsWeb && userDoc.get('webProfileImage') != null) {
-        _webProfileImage =
-            Uint8List.fromList(userDoc.get('webProfileImage').cast<int>());
+        final data = userDoc.data() as Map<String, dynamic>;
+
+        print('User document data: $data');
+
+        setState(() {
+          _displayName = data.containsKey('name')
+              ? data['name']
+              : _user!.displayName ?? 'User';
+
+          _profilePictureUrl =
+              data.containsKey('profileImage') ? data['profileImage'] : '';
+
+          if (kIsWeb && data.containsKey('webProfileImage')) {
+            _webProfileImage =
+                Uint8List.fromList(data['webProfileImage'].cast<int>());
+          }
+        });
+
+        print('Loaded display name: $_displayName');
+        print('Loaded profile picture URL: $_profilePictureUrl');
+      } catch (e) {
+        print('Error loading user profile: $e');
       }
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Center(
@@ -68,15 +85,11 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: CircleAvatar(
-              backgroundImage: kIsWeb
-                  ? (_webProfileImage != null
-                      ? MemoryImage(_webProfileImage!)
-                      : null)
-                  : (_profilePictureUrl.isNotEmpty
-                      ? NetworkImage(_profilePictureUrl)
-                      : const AssetImage('assets/images/default_profile.png')
-                          as ImageProvider),
-              child: _profilePictureUrl.isEmpty && _webProfileImage == null
+              backgroundImage: _profilePictureUrl.isNotEmpty
+                  ? NetworkImage(_profilePictureUrl)
+                  : const AssetImage('assets/images/default_profile.png')
+                      as ImageProvider,
+              child: _profilePictureUrl.isEmpty
                   ? const Icon(Icons.person, size: 40)
                   : null,
             ),
@@ -92,6 +105,13 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (context) => const LoginPage()),
                 );
               }
+            },
+          ),
+          IconButton(
+            icon: Icon(
+                themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+            onPressed: () {
+              themeProvider.toggleTheme();
             },
           ),
         ],
@@ -125,19 +145,6 @@ class _HomePageState extends State<HomePage> {
                 style: const TextStyle(fontSize: 20),
               ),
               const SizedBox(width: 10),
-              CircleAvatar(
-                backgroundImage: kIsWeb
-                    ? (_webProfileImage != null
-                        ? MemoryImage(_webProfileImage!)
-                        : null)
-                    : (_profilePictureUrl.isNotEmpty
-                        ? NetworkImage(_profilePictureUrl)
-                        : const AssetImage('assets/images/default_profile.png')
-                            as ImageProvider),
-                child: _profilePictureUrl.isEmpty && _webProfileImage == null
-                    ? const Icon(Icons.person, size: 40)
-                    : null,
-              ),
             ],
           ),
           const SizedBox(height: 20),
