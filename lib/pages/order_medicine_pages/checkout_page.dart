@@ -60,36 +60,36 @@ class _CheckoutPageState extends State<CheckoutPage> {
       isProcessing = true;
     });
 
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+
     try {
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
-        for (CartItem item in widget.cartItems) {
-          DocumentReference medicineRef = FirebaseFirestore.instance
-              .collection('pharmacies')
-              .doc('TT5akFCT2id9ZfZrJWcC')
-              .collection('medicines')
-              .doc(item.medicineId);
+      for (CartItem item in widget.cartItems) {
+        DocumentReference medicineRef = FirebaseFirestore.instance
+            .collection('pharmacies')
+            .doc('TT5akFCT2id9ZfZrJWcC')
+            .collection('medicines')
+            .doc(item.medicineId);
 
-          DocumentSnapshot medicineSnapshot =
-              await transaction.get(medicineRef);
+        DocumentSnapshot medicineSnapshot = await medicineRef.get();
 
-          if (medicineSnapshot.exists) {
-            int currentStock = int.parse(medicineSnapshot['medicine_stock']);
-            int updatedStock = currentStock - item.quantity;
+        if (medicineSnapshot.exists) {
+          int currentStock = int.parse(medicineSnapshot['medicine_stock']);
+          int updatedStock = currentStock - item.quantity;
 
-            if (updatedStock >= 0) {
-              transaction.update(medicineRef, {
-                'medicine_stock': updatedStock.toString(),
-              });
-            } else {
-              throw Exception('Insufficient stock for ${item.medicineName}');
-            }
+          if (updatedStock >= 0) {
+            batch.update(
+                medicineRef, {'medicine_stock': updatedStock.toString()});
           } else {
-            throw Exception('Medicine not found: ${item.medicineName}');
+            throw Exception('Insufficient stock for ${item.medicineName}');
           }
+        } else {
+          throw Exception('Medicine not found: ${item.medicineName}');
         }
-      });
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      await batch.commit();
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Checkout successful!'),
       ));
 

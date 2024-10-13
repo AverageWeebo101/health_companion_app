@@ -76,10 +76,15 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       await user!.delete();
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user!.uid)
-          .delete();
+      var userDoc =
+          FirebaseFirestore.instance.collection('users').doc(user!.uid);
+
+      var collections = await userDoc.collection('activityLog').get();
+      for (var doc in collections.docs) {
+        await doc.reference.delete();
+      }
+
+      await userDoc.delete();
 
       Navigator.pushReplacement(
         context,
