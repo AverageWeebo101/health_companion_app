@@ -17,6 +17,8 @@ import 'pages/activity_log_page.dart';
 import 'pages/tos_page.dart';
 
 import 'pages/order_medicine_pages/pharmacy_list.dart';
+import 'pages/order_medicine_pages/nefarious_remedies.dart';
+import 'pages/order_medicine_pages/checkout_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,6 +96,11 @@ class _MyAppState extends State<MyApp> {
               '/activity_log': (context) => const ActivityLogPage(),
               '/tos': (context) => const TermsOfServicePage(),
               '/order_medicine': (context) => const PharmacyListPage(),
+              '/nefarious_remedies_medpage': (context) =>
+                  NefariousRemediesPage(),
+              '/checkout': (context) => CheckoutPage(
+                    cartItems: [],
+                  ),
             },
             onGenerateRoute: (settings) {
               if (settings.name == '/edit_profile') {

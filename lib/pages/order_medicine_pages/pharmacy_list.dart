@@ -33,7 +33,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
       _isLoggedIn = user != null;
       if (!_isLoggedIn) {
         _showWarning = true;
-        _warningTimer = Timer(Duration(seconds: 10), () {
+        _warningTimer = Timer(const Duration(seconds: 10), () {
           Navigator.pushReplacementNamed(context, '/');
         });
       }
@@ -45,21 +45,22 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Unavailable'),
-          content: Text('Pharmacy currently unavailable, try again later.'),
+          title: const Text('Unavailable'),
+          content:
+              const Text('Pharmacy currently unavailable, try again later.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
       },
     );
 
-    await Future.delayed(Duration(seconds: 10));
+    await Future.delayed(const Duration(seconds: 10));
     Navigator.of(context).pop();
   }
 
@@ -71,11 +72,12 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
 
     for (int i = 0; i < 5; i++) {
       if (i < fullStars) {
-        stars.add(Icon(Icons.star, color: Colors.yellow, size: 20));
+        stars.add(const Icon(Icons.star, color: Colors.yellow, size: 20));
       } else if (i == fullStars && halfStar) {
-        stars.add(Icon(Icons.star_half, color: Colors.yellow, size: 20));
+        stars.add(const Icon(Icons.star_half, color: Colors.yellow, size: 20));
       } else {
-        stars.add(Icon(Icons.star_border, color: Colors.yellow, size: 20));
+        stars
+            .add(const Icon(Icons.star_border, color: Colors.yellow, size: 20));
       }
     }
 
@@ -88,7 +90,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pharmacy List'),
+        title: const Text('Pharmacy List'),
       ),
       body: Stack(
         children: [
@@ -97,7 +99,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                 FirebaseFirestore.instance.collection('pharmacies').snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               }
 
               if (snapshot.hasError) {
@@ -116,10 +118,10 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                   var numReviews = pharmacy['numReviews'];
 
                   return Card(
-                    margin: EdgeInsets.all(10),
+                    margin: const EdgeInsets.all(10),
                     child: ListTile(
                       leading: Image.network(logoUrl, width: 50, height: 50),
-                      title: Text(name, style: TextStyle(fontSize: 18)),
+                      title: Text(name, style: const TextStyle(fontSize: 18)),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -136,8 +138,8 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                             _showUnavailableDialog();
                           }
                         },
-                        icon: Icon(Icons.shopping_cart),
-                        label: Text('Shop'),
+                        icon: const Icon(Icons.shopping_cart),
+                        label: const Text('Shop'),
                       ),
                     ),
                   );
@@ -148,15 +150,15 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
           if (_showWarning)
             Positioned.fill(
               child: AlertDialog(
-                title: Text('Log In for Best Experience'),
-                content: Text(
+                title: const Text('Log In for Best Experience'),
+                content: const Text(
                     'For a secure and personalized experience, we recommend logging in before ordering.'),
                 actions: [
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/login');
                     },
-                    child: Text('Log In'),
+                    child: const Text('Log In'),
                   ),
                   TextButton(
                     onPressed: () {
@@ -165,7 +167,7 @@ class _PharmacyListPageState extends State<PharmacyListPage> {
                       });
                       _warningTimer?.cancel();
                     },
-                    child: Text('Continue Ordering'),
+                    child: const Text('Continue Ordering'),
                   ),
                 ],
               ),
